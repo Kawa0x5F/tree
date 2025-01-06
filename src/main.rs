@@ -47,3 +47,18 @@ fn make_hierarchy(level: usize) -> String {
 
     output_string
 }
+
+fn make_last_hierarchy(level: usize) -> String {
+    let mut output_string = String::new();
+
+    if level == 0 {
+        return output_string;
+    }
+
+    for _i in 0..(level - 1) {
+        output_string.push_str("   ");
+    }
+    output_string.push_str("|--");
+
+    output_string
+}
