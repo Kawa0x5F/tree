@@ -11,7 +11,11 @@ fn main() {
     let args = Cli::parse();
     let hierarchy_string = String::new();
 
-    println!("{:?}", args.path.file_name().unwrap());
+    if args.path.is_file() || args.path.is_dir() {
+        println!("{:?}", args.path.to_string_lossy());
+    } else {
+        println!("The path does not exist or is not accessible.");
+    }
     recurse_folder(args.path.to_path_buf(), hierarchy_string);
 }
 
