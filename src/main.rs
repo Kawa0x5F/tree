@@ -9,56 +9,42 @@ struct Cli {
 
 fn main() {
     let args = Cli::parse();
-    println!("{:?}", args.path);
+    let hierarchy_string = String::new();
 
-    recurse_folder(args.path.to_path_buf(), 0);
+    println!("{:?}", args.path.file_name().unwrap());
+    recurse_folder(args.path.to_path_buf(), hierarchy_string);
 }
 
-fn recurse_folder(path: PathBuf, level: usize) {
+fn recurse_folder(path: PathBuf, hierarchy_string: String) {
     match fs::read_dir(path) {
         Err(why) => println!("! {:?}", why.kind()),
         Ok(paths) => {
-            for path in paths {
-                let path_value = path.unwrap();
+            let paths_vec: Vec<_> = paths.filter_map(|f| f.ok()).collect();
+            for (i, path) in paths_vec.iter().enumerate() {
+                let value = path;
+                let is_last = i + 1 == paths_vec.len();
+                let to_path = if is_last { "`--" } else { "|--" };
                 println!(
-                    "{}{}",
-                    make_hierarchy(level),
-                    path_value.file_name().into_string().ok().unwrap()
+                    "{}{}{}",
+                    hierarchy_string,
+                    to_path,
+                    value.file_name().into_string().ok().unwrap()
                 );
-                if path_value.path().is_dir() {
-                    recurse_folder(path_value.path(), level + 1);
+                if value.path().is_dir() {
+                    recurse_folder(
+                        value.path(),
+                        make_hierarchy(hierarchy_string.clone(), is_last),
+                    );
                 }
             }
         }
     }
 }
 
-fn make_hierarchy(level: usize) -> String {
-    let mut output_string = String::new();
-
-    if level == 0 {
-        return output_string;
-    }
-
-    for _i in 0..(level - 1) {
-        output_string.push_str("|  ");
-    }
-    output_string.push_str("|--");
-
-    output_string
-}
-
-fn make_last_hierarchy(level: usize) -> String {
-    let mut output_string = String::new();
-
-    if level == 0 {
-        return output_string;
-    }
-
-    for _i in 0..(level - 1) {
-        output_string.push_str("   ");
-    }
-    output_string.push_str("|--");
-
-    output_string
+fn make_hierarchy(hierarchy_string: String, is_last: bool) -> String {
+    let mut new_hierarchy_string = String::new();
+    new_hierarchy_string.push_str(&hierarchy_string);
+    new_hierarchy_string.push(if is_last { ' ' } else { '|' });
+    new_hierarchy_string.push_str("  ");
+    new_hierarchy_string
 }
