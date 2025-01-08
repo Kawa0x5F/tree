@@ -4,6 +4,7 @@ use std::path::PathBuf;
 
 #[derive(Parser)]
 struct Cli {
+    #[arg(default_value = ".")]
     path: PathBuf,
 }
 
@@ -13,10 +14,12 @@ fn main() {
 
     if args.path.is_file() || args.path.is_dir() {
         println!("{:?}", args.path.to_string_lossy());
+        recurse_folder(args.path.to_path_buf(), hierarchy_string);
+    } else if args.path.file_name().is_none() {
+        recurse_folder(args.path.to_path_buf(), hierarchy_string);
     } else {
         println!("The path does not exist or is not accessible.");
     }
-    recurse_folder(args.path.to_path_buf(), hierarchy_string);
 }
 
 fn recurse_folder(path: PathBuf, hierarchy_string: String) {
